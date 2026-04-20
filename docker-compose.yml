@@ -1,0 +1,28 @@
+services:
+  backend:
+    build: ./backend
+    container_name: cert-man-backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - cert-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATA_DIR=/app/data
+      - ADMIN_PASSWORD=admin
+      - JWT_SECRET=supersecret_jwt_key
+      - API_KEY=my-secret-api-key
+
+  frontend:
+    build: ./frontend
+    container_name: cert-man-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - BACKEND_URI=http://backend:3001
+    depends_on:
+      - backend
+
+volumes:
+  cert-data:
