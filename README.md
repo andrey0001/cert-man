@@ -14,6 +14,8 @@ CertManager is a lightweight, Dockerized web application for managing your own P
   - Docker containers run as a secure, non-root user (`node`).
 - **Modern UI**: React-based frontend with pagination, filtering, and responsive design.
 
+![CertManager Interface](./cert-man.png)
+
 ## 🛠 Tech Stack
 
 - **Frontend**: React, TypeScript, Vite, Nginx.
