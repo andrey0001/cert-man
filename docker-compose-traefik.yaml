@@ -1,0 +1,76 @@
+version: '3.7'
+
+services:
+  traefik:
+    image: traefik:v3.6
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      
+      # Let's Encrypt DNS Challenge Configuration (DigitalOcean)
+      - "--certificatesresolvers.doresolver.acme.dnschallenge=true"
+      - "--certificatesresolvers.doresolver.acme.dnschallenge.provider=digitalocean"
+      - "--certificatesresolvers.doresolver.acme.dnschallenge.delaybeforecheck=60"
+      - "--certificatesresolvers.doresolver.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
+      - "--certificatesresolvers.doresolver.acme.email=admin@venus.andrey.work"
+      - "--certificatesresolvers.doresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "letsencrypt:/letsencrypt"
+    env_file:
+      - .env
+    environment:
+      - DO_AUTH_TOKEN=${DO_AUTH_TOKEN}
+      - DO_POLLING_INTERVAL=10
+      - DO_PROPAGATION_TIMEOUT=100
+
+  backend:
+    build: ./backend
+    container_name: cert-man-backend
+    volumes:
+      - cert-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATA_DIR=/app/data
+      - ADMIN_PASSWORD=admin
+      - JWT_SECRET=supersecret_jwt_key
+      - API_KEY=my-secret-api-key
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.certman-backend.rule=Host(`venus.andrey.work`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.certman-backend.entrypoints=websecure"
+      - "traefik.http.routers.certman-backend.tls=true"
+      - "traefik.http.routers.certman-backend.tls.certresolver=doresolver"
+      - "traefik.http.services.certman-backend.loadbalancer.server.port=3001"
+
+  frontend:
+    build: ./frontend
+    container_name: cert-man-frontend
+    environment:
+      - BACKEND_URI=http://backend:3001
+    depends_on:
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.certman-frontend.rule=Host(`venus.andrey.work`) && PathPrefix(`/`)"
+      - "traefik.http.routers.certman-frontend.entrypoints=websecure"
+      - "traefik.http.routers.certman-frontend.tls=true"
+      - "traefik.http.routers.certman-frontend.tls.certresolver=doresolver"
+      - "traefik.http.services.certman-frontend.loadbalancer.server.port=80"
+
+volumes:
+  cert-data:
+  letsencrypt:
