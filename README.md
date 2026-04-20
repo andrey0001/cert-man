@@ -34,25 +34,41 @@ git clone <your-repository-url>
 cd cert-man
 ```
 
-### 2. Configure Environment (Optional)
-You can edit the `docker-compose.yml` file to change the default passwords and secrets:
+### 2. Configure Environment (Optional but recommended)
+You can copy `.env.example` to `.env` and edit it to set your passwords and domain settings:
+
+```bash
+cp .env.example .env
+```
 
 | Variable | Default Value | Description |
 |----------|---------------|-------------|
+| `DOMAIN` | `venus.andrey.work` | Domain name for Traefik routing (Option B). |
+| `ACME_EMAIL` | `admin@venus.andrey.work` | Email for Let's Encrypt notifications. |
+| `DO_AUTH_TOKEN` | `change_me` | DigitalOcean API token for DNS-01 Challenge. |
 | `ADMIN_PASSWORD` | `admin` | Password to access the Web UI. |
 | `JWT_SECRET` | `supersecret_jwt_key` | Secret used to sign session tokens. |
 | `API_KEY` | `my-secret-api-key` | Key used for direct backend API access. |
-| `BACKEND_URI` | `http://backend:3001` | Internal Docker DNS routing for Nginx. |
 
 ### 3. Build and Run
-Start the application in detached mode:
+
+**Option A: Local Development (HTTP only)**
+Best for local testing without a domain name.
 ```bash
 docker compose up --build -d
 ```
+Access the UI at: **http://localhost:3000**
+
+**Option B: Production with Traefik (HTTPS & Domain)**
+Best for deploying on a public server. Uses Traefik as a reverse proxy, issues a Let's Encrypt SSL certificate via DigitalOcean DNS challenge, and routes traffic properly.
+*Make sure your `.env` file is properly configured with your `DOMAIN`, `ACME_EMAIL`, and `DO_AUTH_TOKEN` before running this.*
+```bash
+docker compose -f docker-compose-traefik.yaml up --build -d
+```
+Access the UI at: **https://<YOUR_DOMAIN>**
 
 ### 4. Access the UI
-Open your browser and navigate to:
-**http://localhost:3000**
+Open your browser and navigate to your chosen address (localhost:3000 or your domain).
 
 Log in using the `ADMIN_PASSWORD` (default is `admin`).
 

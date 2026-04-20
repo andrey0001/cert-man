@@ -20,7 +20,7 @@ services:
       - "--certificatesresolvers.doresolver.acme.dnschallenge.provider=digitalocean"
       - "--certificatesresolvers.doresolver.acme.dnschallenge.delaybeforecheck=60"
       - "--certificatesresolvers.doresolver.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
-      - "--certificatesresolvers.doresolver.acme.email=admin@venus.andrey.work"
+      - "--certificatesresolvers.doresolver.acme.email=${ACME_EMAIL:-admin@example.com}"
       - "--certificatesresolvers.doresolver.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
@@ -39,18 +39,20 @@ services:
   backend:
     build: ./backend
     container_name: cert-man-backend
+    env_file:
+      - .env
     volumes:
       - cert-data:/app/data
     environment:
       - NODE_ENV=production
       - PORT=3001
       - DATA_DIR=/app/data
-      - ADMIN_PASSWORD=admin
-      - JWT_SECRET=supersecret_jwt_key
-      - API_KEY=my-secret-api-key
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - JWT_SECRET=${JWT_SECRET:-supersecret_jwt_key}
+      - API_KEY=${API_KEY:-my-secret-api-key}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.certman-backend.rule=Host(`venus.andrey.work`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.certman-backend.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
       - "traefik.http.routers.certman-backend.entrypoints=websecure"
       - "traefik.http.routers.certman-backend.tls=true"
       - "traefik.http.routers.certman-backend.tls.certresolver=doresolver"
@@ -65,7 +67,7 @@ services:
       - backend
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.certman-frontend.rule=Host(`venus.andrey.work`) && PathPrefix(`/`)"
+      - "traefik.http.routers.certman-frontend.rule=Host(`${DOMAIN}`) && PathPrefix(`/`)"
       - "traefik.http.routers.certman-frontend.entrypoints=websecure"
       - "traefik.http.routers.certman-frontend.tls=true"
       - "traefik.http.routers.certman-frontend.tls.certresolver=doresolver"

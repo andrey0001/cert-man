@@ -2,6 +2,8 @@ services:
   backend:
     build: ./backend
     container_name: cert-man-backend
+    env_file:
+      - .env
     ports:
       - "3001:3001"
     volumes:
@@ -10,9 +12,9 @@ services:
       - NODE_ENV=production
       - PORT=3001
       - DATA_DIR=/app/data
-      - ADMIN_PASSWORD=admin
-      - JWT_SECRET=supersecret_jwt_key
-      - API_KEY=my-secret-api-key
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - JWT_SECRET=${JWT_SECRET:-supersecret_jwt_key}
+      - API_KEY=${API_KEY:-my-secret-api-key}
 
   frontend:
     build: ./frontend
