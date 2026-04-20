@@ -43,8 +43,8 @@ cp .env.example .env
 
 | Variable | Default Value | Description |
 |----------|---------------|-------------|
-| `DOMAIN` | `venus.andrey.work` | Domain name for Traefik routing (Option B). |
-| `ACME_EMAIL` | `admin@venus.andrey.work` | Email for Let's Encrypt notifications. |
+| `DOMAIN` | `your.domain.here` | Domain name for Traefik routing (Option B). |
+| `ACME_EMAIL` | `admin@your.domain.here` | Email for Let's Encrypt notifications. |
 | `DO_AUTH_TOKEN` | `change_me` | DigitalOcean API token for DNS-01 Challenge. |
 | `ADMIN_PASSWORD` | `admin` | Password to access the Web UI. |
 | `JWT_SECRET` | `supersecret_jwt_key` | Secret used to sign session tokens. |

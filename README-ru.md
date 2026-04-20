@@ -43,8 +43,8 @@ cp .env.example .env
 
 | Переменная | Значение по умолчанию | Описание |
 |------------|-----------------------|----------|
-| `DOMAIN` | `venus.andrey.work` | Доменное имя для маршрутизации Traefik (Вариант Б). |
-| `ACME_EMAIL` | `admin@venus.andrey.work` | Email для уведомлений от Let's Encrypt. |
+| `DOMAIN` | `your.domain.here` | Доменное имя для маршрутизации Traefik (Вариант Б). |
+| `ACME_EMAIL` | `admin@your.domain.here` | Email для уведомлений от Let's Encrypt. |
 | `DO_AUTH_TOKEN` | `change_me` | API-токен DigitalOcean для DNS-01 Challenge. |
 | `ADMIN_PASSWORD` | `admin` | Пароль для доступа к веб-интерфейсу. |
 | `JWT_SECRET` | `supersecret_jwt_key` | Секрет для подписи сессионных токенов. |
