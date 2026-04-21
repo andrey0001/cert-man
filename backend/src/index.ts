@@ -17,6 +17,16 @@ app.use(express.json());
 
 initStorage();
 
+const getBaseUrl = (req: express.Request) => {
+  if (process.env.DOMAIN) {
+    const protocol = process.env.DOMAIN.includes('localhost') ? 'http' : 'https';
+    return `${protocol}://${process.env.DOMAIN}`;
+  }
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.headers['x-forwarded-host'] || req.get('host');
+  return `${protocol}://${host}`;
+};
+
 app.post('/api/login', (req, res) => {
   const { password } = req.body;
   if (password === ADMIN_PASSWORD) {
@@ -189,7 +199,7 @@ app.post('/api/ca', (req, res) => {
       locality: req.body.locality,
       validityDays: req.body.validityDays || 3650,
       keySize: req.body.keySize || 4096,
-      crlUrl: req.body.crlUrl
+      crlUrl: req.body.parentCaSerial ? `${getBaseUrl(req)}/api/ca/${req.body.parentCaSerial}/crl` : undefined
     };
     
     let certPem, privateKeyPem, serial;
@@ -245,7 +255,7 @@ app.post('/api/certs', (req, res) => {
       keySize: body.keySize || 2048,
       isClient: !!body.isClient,
       sans: body.sans || [],
-      crlUrl: body.crlUrl
+      crlUrl: `${getBaseUrl(req)}/api/ca/${caSerial}/crl`
     };
 
     const caCertPem = readFile('ca', `${caSerial}.crt`);

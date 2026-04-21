@@ -172,8 +172,7 @@ function App() {
     e.preventDefault();
     try {
       const payload = {
-        ...caForm,
-        crlUrl: caForm.parentCaSerial ? `${window.location.origin}/api/ca/${caForm.parentCaSerial}/crl` : undefined
+        ...caForm
       };
       const res = await apiFetch(`${API_BASE}/ca`, {
         method: 'POST',
@@ -197,8 +196,7 @@ function App() {
     try {
       const payload = { 
         ...certForm, 
-        sans: certForm.sans.split(',').map(s => s.trim()).filter(s => s),
-        crlUrl: `${window.location.origin}/api/ca/${certForm.caSerial}/crl`
+        sans: certForm.sans.split(',').map(s => s.trim()).filter(s => s)
       };
       const res = await apiFetch(`${API_BASE}/certs`, {
         method: 'POST',
