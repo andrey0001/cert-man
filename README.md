@@ -115,5 +115,12 @@ If you want to mount a local folder instead of a Docker volume, modify your `doc
 
 ---
 
+## 📜 License
+
+This project is licensed under the **MIT License**. See the [license.txt](./license.txt) file for more details. 
+Copyright (c) 2026 shadow_alone.
+
+---
+
 > **P.S. Practical Use Cases**  
 > This product is highly convenient for generating certificates for enterprise **Wi-Fi authentication** (WPA-Enterprise / EAP-TLS). It is also an excellent solution for setting up any Mutual TLS (mTLS) authorization. For instance, you can easily generate and manage client/server certificates to securely connect remote Docker nodes in **Portainer** via port `2376/tls`.
