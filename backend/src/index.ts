@@ -28,7 +28,11 @@ app.post('/api/login', (req, res) => {
 
 // Authentication Middleware
 const authMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  if (req.path === '/api/login' || req.path === '/api/status') return next();
+  if (
+    req.path === '/api/login' || 
+    req.path === '/api/status' || 
+    (req.path.startsWith('/api/ca/') && req.path.endsWith('/crl'))
+  ) return next();
 
   // Allow Direct API Key Access
   const apiKeyHeader = req.header('X-API-Key');
