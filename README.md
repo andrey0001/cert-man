@@ -85,6 +85,14 @@ Log in using the `ADMIN_PASSWORD` (default is `admin`).
 4. **Download**: Click the `CRT`, `KEY`, or `P12` buttons next to the certificate to download the generated files.
 5. **Revocation & CRL**: If a certificate is compromised, click "Revoke". To obtain the updated Certificate Revocation List, click the **CRL** button next to the issuing CA in the web interface, or fetch it automatically via the API: `GET /api/ca/<CA_SERIAL_NUMBER>/crl`.
 
+### Screenshots
+
+**Certificate Details**
+![View Certificate Detail](./cert-man-view.png)
+
+**PKCS#12 Export (Encrypted)**
+![P12 Export Certificate](./cert-man-p12.png)
+
 ---
 
 ## 🤖 API Access
