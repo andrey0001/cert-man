@@ -318,24 +318,27 @@ function App() {
 
   if (!token) {
     return (
-      <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="card" style={{ maxWidth: '400px', width: '100%', padding: '2rem' }}>
-          <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>CertManager Login</h2>
-          <form onSubmit={login}>
-            <div className="form-group full-width">
-              <label>Password</label>
-              <input 
-                type="password" 
-                value={loginPassword} 
-                onChange={e => setLoginPassword(e.target.value)} 
-                required 
-                placeholder="Enter admin password" 
-                style={{ marginBottom: '1rem' }}
-              />
-            </div>
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Login</button>
-          </form>
+      <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', position: 'relative' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+          <div className="card" style={{ maxWidth: '400px', width: '100%', padding: '2rem' }}>
+            <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>CertManager Login</h2>
+            <form onSubmit={login}>
+              <div className="form-group full-width">
+                <label>Password</label>
+                <input 
+                  type="password" 
+                  value={loginPassword} 
+                  onChange={e => setLoginPassword(e.target.value)} 
+                  required 
+                  placeholder="Enter admin password" 
+                  style={{ marginBottom: '1rem' }}
+                />
+              </div>
+              <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Login</button>
+            </form>
+          </div>
         </div>
+        
         {/* Toast Notification Container */}
         {toast && (
           <div className="toast-container">
@@ -344,6 +347,17 @@ function App() {
             </div>
           </div>
         )}
+
+        <footer className="app-footer" style={{ width: '100%' }}>
+          <div>
+            &copy; {new Date().getFullYear()} CertManager. Released under the <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer">MIT License</a>.
+          </div>
+          <div className="footer-links">
+            <a href="https://github.com/andrey0001/cert-man" target="_blank" rel="noopener noreferrer">
+              GitHub Project
+            </a>
+          </div>
+        </footer>
       </div>
     );
   }
@@ -751,6 +765,17 @@ function App() {
           </div>
         </div>
       )}
+
+      <footer className="app-footer">
+        <div>
+          &copy; {new Date().getFullYear()} CertManager. Released under the <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer">MIT License</a>.
+        </div>
+        <div className="footer-links">
+          <a href="https://github.com/andrey0001/cert-man" target="_blank" rel="noopener noreferrer">
+            GitHub Project
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }
