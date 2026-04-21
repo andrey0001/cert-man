@@ -14,6 +14,7 @@ interface CertMetadata {
   pem?: string;
   issuer?: string;
   sans?: string[];
+  crlUrl?: string;
 }
 
 function App() {
@@ -651,6 +652,12 @@ function App() {
                 <label>Issuer</label>
                 <div>{viewCertData.issuer || 'Unknown'}</div>
               </div>
+              {viewCertData.crlUrl && (
+                <div className="cert-detail-item" style={{ gridColumn: '1 / -1' }}>
+                  <label>CRL Distribution Point</label>
+                  <div><a href={viewCertData.crlUrl} target="_blank" rel="noreferrer" style={{color: 'var(--primary)', textDecoration: 'none', wordBreak: 'break-all'}}>{viewCertData.crlUrl}</a></div>
+                </div>
+              )}
               {viewCertData.sans && viewCertData.sans.length > 0 && (
                 <div className="cert-detail-item" style={{ gridColumn: '1 / -1' }}>
                   <label>Subject Alternative Names (SANs)</label>
