@@ -98,15 +98,26 @@ app.get('/api/certs/:serial', (req, res) => {
     const pem = readFile(subDir, `${cert.serial}.crt`);
     
     let issuer = 'Unknown';
+    let sans: string[] = [];
     try {
       const forgeCert = forge.pki.certificateFromPem(pem);
       const issuerAttr = forgeCert.issuer.attributes.find(a => a.name === 'commonName' || a.shortName === 'CN');
       issuer = issuerAttr && issuerAttr.value ? String(issuerAttr.value) : 'Unknown';
+
+      const sanExt = forgeCert.getExtension('subjectAltName');
+      if (sanExt && (sanExt as any).altNames) {
+        sans = (sanExt as any).altNames.map((n: any) => {
+          if (n.type === 2) return `DNS:${n.value}`;
+          if (n.type === 7) return `IP:${n.ip}`;
+          if (n.type === 1) return `Email:${n.value}`;
+          return n.value;
+        });
+      }
     } catch (e) {
       console.error('Failed to parse cert PEM', e);
     }
     
-    res.json({ ...cert, pem, issuer });
+    res.json({ ...cert, pem, issuer, sans });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

@@ -12,6 +12,7 @@ interface CertMetadata {
   status: 'active' | 'revoked';
   pem?: string;
   issuer?: string;
+  sans?: string[];
 }
 
 function App() {
@@ -640,6 +641,16 @@ function App() {
                 <label>Issuer</label>
                 <div>{viewCertData.issuer || 'Unknown'}</div>
               </div>
+              {viewCertData.sans && viewCertData.sans.length > 0 && (
+                <div className="cert-detail-item" style={{ gridColumn: '1 / -1' }}>
+                  <label>Subject Alternative Names (SANs)</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.25rem' }}>
+                    {viewCertData.sans.map((san, idx) => (
+                      <span key={idx} className="badge badge-server" style={{ fontSize: '0.7rem' }}>{san}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="cert-detail-item">
                 <label>Serial Number</label>
                 <div style={{fontFamily: 'monospace'}}>{viewCertData.serial}</div>
