@@ -98,10 +98,12 @@ curl -H "X-API-Key: my-secret-api-key" \
 # Скачать P12
 curl -X POST -H "Content-Type: application/json" \
      -H "X-API-Key: my-secret-api-key" \
-     -d '{"password": "my_secure_password"}' \
+     -d '{"password": "my_secure_password", "algorithm": "aes256"}' \
      -o bundle.p12 \
      http://localhost:3001/api/download/<SERIAL_NUMBER>/p12
 ```
+
+Примечание: `algorithm` может быть `aes256` (по умолчанию) или `3des` (устаревший).
 
 ### 7. Отозвать сертификат
 Помечает сертификат как отозванный в базе данных.

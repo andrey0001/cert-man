@@ -32,6 +32,7 @@ function App() {
   // P12 Modal State
   const [p12Modal, setP12Modal] = useState<{ open: boolean; serial: string }>({ open: false, serial: '' });
   const [p12Password, setP12Password] = useState('');
+  const [p12Algorithm, setP12Algorithm] = useState<'aes256' | '3des'>('aes256');
   
   // Toast State
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
@@ -239,7 +240,7 @@ function App() {
       const res = await apiFetch(`${API_BASE}/download/${p12Modal.serial}/p12`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: p12Password })
+        body: JSON.stringify({ password: p12Password, algorithm: p12Algorithm })
       });
       if (!res.ok) throw new Error((await res.json()).error || 'Failed to generate P12');
       
@@ -724,6 +725,13 @@ function App() {
                     placeholder="Create a password..." 
                     autoFocus
                   />
+                </div>
+                <div className="form-group full-width">
+                  <label>Encryption Algorithm</label>
+                  <select value={p12Algorithm} onChange={e => setP12Algorithm(e.target.value as 'aes256' | '3des')}>
+                    <option value="aes256">AES-256 (Modern, Recommended)</option>
+                    <option value="3des">3DES (Legacy, for older systems)</option>
+                  </select>
                 </div>
               </div>
               <div className="modal-actions">

@@ -347,7 +347,7 @@ app.get('/api/download/:serial/:format', (req, res) => {
 
 app.post('/api/download/:serial/p12', (req, res) => {
   const { serial } = req.params;
-  const { password } = req.body;
+  const { password, algorithm } = req.body;
   const index = getIndex();
   const cert = index.find(m => m.serial === serial);
 
@@ -359,8 +359,8 @@ app.post('/api/download/:serial/p12', (req, res) => {
     const caCertPem = readFile('ca', `${cert.caSerial}.crt`);
     const certPem = readFile('certs', `${serial}.crt`);
     const keyPem = readFile('keys', `${serial}.key`);
-    
-    const p12Buffer = exportToPkcs12(certPem, keyPem, caCertPem, password);
+
+    const p12Buffer = exportToPkcs12(certPem, keyPem, caCertPem, password, algorithm);
     res.setHeader('Content-Type', 'application/x-pkcs12');
     res.setHeader('Content-Disposition', `attachment; filename="${cert.commonName.replace(/[^a-z0-9]/gi, '_')}.p12"`);
     res.send(p12Buffer);
@@ -368,7 +368,6 @@ app.post('/api/download/:serial/p12', (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 app.listen(port, () => {
   console.log(`Backend listening at http://localhost:${port}`);
 });

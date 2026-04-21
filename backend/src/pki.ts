@@ -198,12 +198,12 @@ export function generateCRL(caCertPem: string, caKeyPem: string, revokedCerts: {
   return crl.getPEM();
 }
 
-export function exportToPkcs12(certPem: string, keyPem: string, caCertPem: string, password: string) {
+export function exportToPkcs12(certPem: string, keyPem: string, caCertPem: string, password: string, algorithm: 'aes256' | '3des' = 'aes256') {
   const cert = forge.pki.certificateFromPem(certPem);
   const key = forge.pki.privateKeyFromPem(keyPem);
   const caCert = forge.pki.certificateFromPem(caCertPem);
 
-  const p12Asn1 = forge.pkcs12.toPkcs12Asn1(key, [cert, caCert], password, { algorithm: 'aes256' });
+  const p12Asn1 = forge.pkcs12.toPkcs12Asn1(key, [cert, caCert], password, { algorithm });
   const p12Der = forge.asn1.toDer(p12Asn1).getBytes();
   return Buffer.from(p12Der, 'binary');
 }

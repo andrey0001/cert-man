@@ -98,10 +98,12 @@ To download a PKCS#12 archive, you must provide an encryption password in the re
 # Download P12
 curl -X POST -H "Content-Type: application/json" \
      -H "X-API-Key: my-secret-api-key" \
-     -d '{"password": "my_secure_password"}' \
+     -d '{"password": "my_secure_password", "algorithm": "aes256"}' \
      -o bundle.p12 \
      http://localhost:3001/api/download/<SERIAL_NUMBER>/p12
 ```
+
+Note: `algorithm` can be `aes256` (default) or `3des` (legacy).
 
 ### 7. Revoke a Certificate
 Marks a certificate as revoked in the database.
