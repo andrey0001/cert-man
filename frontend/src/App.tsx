@@ -26,6 +26,10 @@ function App() {
   const [showCertForm, setShowCertForm] = useState(false);
   const [viewCertData, setViewCertData] = useState<CertMetadata | null>(null);
   
+  // P12 Modal State
+  const [p12Modal, setP12Modal] = useState<{ open: boolean; serial: string }>({ open: false, serial: '' });
+  const [p12Password, setP12Password] = useState('');
+  
   // Toast State
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
@@ -220,6 +224,34 @@ function App() {
     showToast('Copied to clipboard!');
   };
 
+  const downloadP12 = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await apiFetch(`${API_BASE}/download/${p12Modal.serial}/p12`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: p12Password })
+      });
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed to generate P12');
+      
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const cert = certs.find(c => c.serial === p12Modal.serial);
+      a.download = `${(cert?.commonName || 'certificate').replace(/[^a-z0-9]/gi, '_')}.p12`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      
+      setP12Modal({ open: false, serial: '' });
+      setP12Password('');
+    } catch (err: any) {
+      showToast(err.message, 'error');
+    }
+  };
+
   const renderCertTable = (title: string, list: CertMetadata[]) => {
     if (list.length === 0) return null;
     return (
@@ -251,7 +283,7 @@ function App() {
                     <button className="action-btn view" onClick={() => viewCert(cert.serial)} title="View Details">View</button>
                     <a href={`${API_BASE}/download/${cert.serial}/crt?token=${token}`} className="action-btn download" download title="Download CRT">CRT</a>
                     <a href={`${API_BASE}/download/${cert.serial}/key?token=${token}`} className="action-btn download" download title="Download Key">KEY</a>
-                    {cert.type !== 'ca' && <a href={`${API_BASE}/download/${cert.serial}/p12?token=${token}`} className="action-btn download" download title="Download P12">P12</a>}
+                    {cert.type !== 'ca' && <button className="action-btn download" onClick={() => setP12Modal({ open: true, serial: cert.serial })} title="Download P12">P12</button>}
                     
                     {cert.status === 'active' && (
                       <button className="action-btn revoke" onClick={() => revoke(cert.serial)} title="Revoke">Revoke</button>
@@ -639,6 +671,40 @@ function App() {
             <div className="modal-actions">
               <button type="button" className="btn btn-secondary" onClick={() => setViewCertData(null)}>Close</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* P12 Password Modal */}
+      {p12Modal.open && (
+        <div className="modal-overlay" onClick={() => setP12Modal({ open: false, serial: '' })}>
+          <div className="modal-content" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Download P12 Certificate</h2>
+              <button className="modal-close" onClick={() => setP12Modal({ open: false, serial: '' })}>&times;</button>
+            </div>
+            <form onSubmit={downloadP12}>
+              <div className="form-grid" style={{ paddingBottom: '0.5rem' }}>
+                <div className="form-group full-width">
+                  <label>PKCS#12 Export Password *</label>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 0.5rem 0' }}>
+                    Enter a password to encrypt your .p12 file. You will need this password when importing the certificate into a browser or OS keychain.
+                  </p>
+                  <input 
+                    type="password" 
+                    value={p12Password} 
+                    onChange={e => setP12Password(e.target.value)} 
+                    required 
+                    placeholder="Create a password..." 
+                    autoFocus
+                  />
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn btn-secondary" onClick={() => setP12Modal({ open: false, serial: '' })}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Download</button>
+              </div>
+            </form>
           </div>
         </div>
       )}

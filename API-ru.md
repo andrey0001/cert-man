@@ -78,8 +78,8 @@ curl -X POST -H "Content-Type: application/json" \
 
 ### 6. Скачать файлы сертификата
 Скачать файлы `.crt`, `.key` или `.p12`.
-- **Форматы:** `crt`, `key`, `p12`
 
+#### Скачать CRT или ключ (GET)
 ```bash
 # Скачать CRT
 curl -H "X-API-Key: my-secret-api-key" \
@@ -90,6 +90,17 @@ curl -H "X-API-Key: my-secret-api-key" \
 curl -H "X-API-Key: my-secret-api-key" \
      -o private.key \
      http://localhost:3001/api/download/<SERIAL_NUMBER>/key
+```
+
+#### Скачать архив P12 (POST)
+Чтобы скачать архив PKCS#12, вы должны предоставить пароль для шифрования в теле запроса.
+```bash
+# Скачать P12
+curl -X POST -H "Content-Type: application/json" \
+     -H "X-API-Key: my-secret-api-key" \
+     -d '{"password": "my_secure_password"}' \
+     -o bundle.p12 \
+     http://localhost:3001/api/download/<SERIAL_NUMBER>/p12
 ```
 
 ### 7. Отозвать сертификат

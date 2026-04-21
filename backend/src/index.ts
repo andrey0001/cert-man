@@ -282,18 +282,33 @@ app.get('/api/download/:serial/:format', (req, res) => {
       res.setHeader('Content-Type', 'application/x-pem-file');
       res.setHeader('Content-Disposition', `attachment; filename="${cert.commonName.replace(/[^a-z0-9]/gi, '_')}.key"`);
       res.send(readFile(subDir, `${serial}.key`));
-    } else if (format === 'p12') {
-      if (cert.type === 'ca') return res.status(400).send('Cannot export CA as P12');
-      const caCertPem = readFile('ca', `${cert.caSerial}.crt`);
-      const certPem = readFile('certs', `${serial}.crt`);
-      const keyPem = readFile('keys', `${serial}.key`);
-      const p12Buffer = exportToPkcs12(certPem, keyPem, caCertPem, 'password123'); // Simple default password or from req
-      res.setHeader('Content-Type', 'application/x-pkcs12');
-      res.setHeader('Content-Disposition', `attachment; filename="${cert.commonName.replace(/[^a-z0-9]/gi, '_')}.p12"`);
-      res.send(p12Buffer);
     } else {
       res.status(400).send('Invalid format');
     }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/download/:serial/p12', (req, res) => {
+  const { serial } = req.params;
+  const { password } = req.body;
+  const index = getIndex();
+  const cert = index.find(m => m.serial === serial);
+
+  if (!cert) return res.status(404).json({ error: 'Not found' });
+  if (!password) return res.status(400).json({ error: 'Password is required' });
+
+  try {
+    if (cert.type === 'ca') return res.status(400).json({ error: 'Cannot export CA as P12' });
+    const caCertPem = readFile('ca', `${cert.caSerial}.crt`);
+    const certPem = readFile('certs', `${serial}.crt`);
+    const keyPem = readFile('keys', `${serial}.key`);
+    
+    const p12Buffer = exportToPkcs12(certPem, keyPem, caCertPem, password);
+    res.setHeader('Content-Type', 'application/x-pkcs12');
+    res.setHeader('Content-Disposition', `attachment; filename="${cert.commonName.replace(/[^a-z0-9]/gi, '_')}.p12"`);
+    res.send(p12Buffer);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

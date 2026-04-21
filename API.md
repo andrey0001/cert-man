@@ -78,8 +78,8 @@ curl -X POST -H "Content-Type: application/json" \
 
 ### 6. Download Certificate Files
 Download the actual `.crt`, `.key`, or `.p12` files.
-- **Formats:** `crt`, `key`, `p12`
 
+#### Download CRT or Key (GET)
 ```bash
 # Download the CRT
 curl -H "X-API-Key: my-secret-api-key" \
@@ -90,6 +90,17 @@ curl -H "X-API-Key: my-secret-api-key" \
 curl -H "X-API-Key: my-secret-api-key" \
      -o private.key \
      http://localhost:3001/api/download/<SERIAL_NUMBER>/key
+```
+
+#### Download P12 Archive (POST)
+To download a PKCS#12 archive, you must provide an encryption password in the request body.
+```bash
+# Download P12
+curl -X POST -H "Content-Type: application/json" \
+     -H "X-API-Key: my-secret-api-key" \
+     -d '{"password": "my_secure_password"}' \
+     -o bundle.p12 \
+     http://localhost:3001/api/download/<SERIAL_NUMBER>/p12
 ```
 
 ### 7. Revoke a Certificate
