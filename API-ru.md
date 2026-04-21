@@ -118,3 +118,10 @@ curl -X POST -H "X-API-Key: my-secret-api-key" \
 curl -X DELETE -H "X-API-Key: my-secret-api-key" \
      http://localhost:3001/api/certs/<SERIAL_NUMBER>
 ```
+
+### 9. Скачать список отзыва сертификатов (CRL)
+Получить актуальный CRL для определенного Центра Сертификации. (Аутентификация не требуется, так как списки отзыва публичны, чтобы любые клиенты могли проверять статус сертификатов).
+
+```bash
+curl -o revoked.crl http://localhost:3001/api/ca/<СЕРИЙНЫЙ_НОМЕР_CA>/crl
+```

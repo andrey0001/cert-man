@@ -6,7 +6,8 @@ CertManager is a lightweight, Dockerized web application for managing your own P
 
 - **Certificate Authority Management**: Create Self-Signed Root CAs or Intermediate CAs. Import external CAs.
 - **Certificate Generation**: Issue TLS/SSL Server certificates and Client certificates with custom Subject Alternative Names (SANs) and validity periods.
-- **Certificate Lifecycle**: View details (including Issuer), revoke, or permanently delete certificates.
+- **Certificate Lifecycle**: View details (including Issuer and SANs), revoke, or permanently delete certificates.
+- **CRL Support**: Automatically embeds CRL Distribution Points into issued certificates and provides endpoints to download the latest `.crl` lists.
 - **Export Options**: Download certificates in `.crt`, `.key`, or `.p12` (PKCS#12) formats.
 - **Security**: 
   - Web UI secured by JWT (JSON Web Tokens).
@@ -82,6 +83,7 @@ Log in using the `ADMIN_PASSWORD` (default is `admin`).
 2. **Create an Intermediate CA**: Click `+ New CA`, select your existing Root CA from the "Parent CA" dropdown.
 3. **Issue a Certificate**: Click `+ New Certificate`, select the CA that will sign it, choose "Server" or "Client", and specify the Common Name (CN) and SANs (e.g., `example.com, 192.168.1.5`).
 4. **Download**: Click the `CRT`, `KEY`, or `P12` buttons next to the certificate to download the generated files.
+5. **Revocation & CRL**: If a certificate is compromised, click "Revoke". To obtain the updated Certificate Revocation List, click the **CRL** button next to the issuing CA in the web interface, or fetch it automatically via the API: `GET /api/ca/<CA_SERIAL_NUMBER>/crl`.
 
 ---
 

@@ -118,3 +118,10 @@ Permanently deletes the certificate, its keys, and removes it from the index. **
 curl -X DELETE -H "X-API-Key: my-secret-api-key" \
      http://localhost:3001/api/certs/<SERIAL_NUMBER>
 ```
+
+### 9. Download Certificate Revocation List (CRL)
+Get the latest CRL for a specific Certificate Authority. (No authentication required, as CRLs are publicly available to allow clients to verify certificate status).
+
+```bash
+curl -o revoked.crl http://localhost:3001/api/ca/<CA_SERIAL_NUMBER>/crl
+```

@@ -1,4 +1,5 @@
 import * as forge from 'node-forge';
+import * as jsrsasign from 'jsrsasign';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -14,6 +15,7 @@ export interface CertConfig {
   keySize: 2048 | 4096;
   sans?: string[];
   isClient?: boolean;
+  crlUrl?: string;
 }
 
 function generateSerial() {
@@ -33,6 +35,15 @@ function getSubjectAttributes(config: CertConfig) {
   return attrs;
 }
 
+function addCrlExtension(extensions: any[], crlUrl?: string) {
+  if (crlUrl) {
+    extensions.push({
+      name: 'cRLDistributionPoints',
+      altNames: [{ type: 6, value: crlUrl }]
+    });
+  }
+}
+
 export function generateCA(config: CertConfig) {
   const keys = forge.pki.rsa.generateKeyPair(config.keySize);
   const cert = forge.pki.createCertificate();
@@ -47,11 +58,14 @@ export function generateCA(config: CertConfig) {
 
   cert.setSubject(attrs);
   cert.setIssuer(attrs);
-  cert.setExtensions([
+
+  const extensions: any[] = [
     { name: 'basicConstraints', cA: true },
     { name: 'keyUsage', keyCertSign: true, cRLSign: true, digitalSignature: true, nonRepudiation: true, keyEncipherment: true, dataEncipherment: true },
     { name: 'subjectKeyIdentifier' }
-  ]);
+  ];
+  addCrlExtension(extensions, config.crlUrl);
+  cert.setExtensions(extensions);
 
   cert.sign(keys.privateKey, forge.md.sha256.create());
 
@@ -79,7 +93,7 @@ export function generateIntermediateCA(caCertPem: string, caKeyPem: string, conf
   cert.setSubject(subjectAttrs);
   cert.setIssuer(caCert.subject.attributes);
 
-  cert.setExtensions([
+  const extensions: any[] = [
     { name: 'basicConstraints', cA: true },
     { name: 'keyUsage', keyCertSign: true, cRLSign: true, digitalSignature: true, nonRepudiation: true, keyEncipherment: true, dataEncipherment: true },
     { name: 'subjectKeyIdentifier' },
@@ -87,7 +101,9 @@ export function generateIntermediateCA(caCertPem: string, caKeyPem: string, conf
       name: 'authorityKeyIdentifier',
       keyIdentifier: (caCert as any).generateSubjectKeyIdentifier().getBytes()
     }
-  ]);
+  ];
+  addCrlExtension(extensions, config.crlUrl);
+  cert.setExtensions(extensions);
 
   cert.sign(caKey, forge.md.sha256.create());
 
@@ -129,6 +145,7 @@ export function generateCert(caCertPem: string, caKeyPem: string, config: CertCo
       keyIdentifier: (caCert as any).generateSubjectKeyIdentifier().getBytes()
     }
   ];
+  addCrlExtension(extensions, config.crlUrl);
 
   if (config.sans && config.sans.length > 0) {
     extensions.push({
@@ -154,6 +171,31 @@ export function generateCert(caCertPem: string, caKeyPem: string, config: CertCo
     privateKeyPem: forge.pki.privateKeyToPem(keys.privateKey),
     serial: cert.serialNumber
   };
+}
+
+export function generateCRL(caCertPem: string, caKeyPem: string, revokedCerts: { serial: string, date: string }[]) {
+  const keyObj = jsrsasign.KEYUTIL.getKey(caKeyPem);
+  
+  const now = new Date();
+  const next = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days valid
+  
+  const formatDate = (d: Date) => d.toISOString().replace(/[-:T]/g, '').slice(2, 14) + 'Z';
+  
+  const revcert = revokedCerts.map(r => ({
+    sn: { hex: r.serial },
+    date: { str: formatDate(new Date(r.date)) }
+  }));
+
+  const crl = new jsrsasign.KJUR.asn1.x509.CRL({
+    issuer: { certissuer: caCertPem },
+    thisupdate: { str: formatDate(now) },
+    nextupdate: { str: formatDate(next) },
+    revcert: revcert,
+    sigalg: 'SHA256withRSA',
+    cakey: keyObj
+  } as any);
+
+  return crl.getPEM();
 }
 
 export function exportToPkcs12(certPem: string, keyPem: string, caCertPem: string, password: string) {

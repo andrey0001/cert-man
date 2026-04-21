@@ -10,6 +10,7 @@ interface CertMetadata {
   issuedAt: string;
   expiresAt: string;
   status: 'active' | 'revoked';
+  revokedAt?: string;
   pem?: string;
   issuer?: string;
   sans?: string[];
@@ -169,10 +170,14 @@ function App() {
   const createCA = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const payload = {
+        ...caForm,
+        crlUrl: caForm.parentCaSerial ? `${window.location.origin}/api/ca/${caForm.parentCaSerial}/crl` : undefined
+      };
       const res = await apiFetch(`${API_BASE}/ca`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(caForm)
+        body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error((await res.json()).error || 'Failed to create CA');
       
@@ -189,7 +194,11 @@ function App() {
   const createCert = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const payload = { ...certForm, sans: certForm.sans.split(',').map(s => s.trim()).filter(s => s) };
+      const payload = { 
+        ...certForm, 
+        sans: certForm.sans.split(',').map(s => s.trim()).filter(s => s),
+        crlUrl: `${window.location.origin}/api/ca/${certForm.caSerial}/crl`
+      };
       const res = await apiFetch(`${API_BASE}/certs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -282,6 +291,7 @@ function App() {
                   </td>
                   <td style={{textAlign: 'right'}}>
                     <button className="action-btn view" onClick={() => viewCert(cert.serial)} title="View Details">View</button>
+                    {cert.type === 'ca' && <a href={`${API_BASE}/ca/${cert.serial}/crl?token=${token}`} className="action-btn download" download title="Download CRL">CRL</a>}
                     <a href={`${API_BASE}/download/${cert.serial}/crt?token=${token}`} className="action-btn download" download title="Download CRT">CRT</a>
                     <a href={`${API_BASE}/download/${cert.serial}/key?token=${token}`} className="action-btn download" download title="Download Key">KEY</a>
                     {cert.type !== 'ca' && <button className="action-btn download" onClick={() => setP12Modal({ open: true, serial: cert.serial })} title="Download P12">P12</button>}

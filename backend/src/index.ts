@@ -3,7 +3,7 @@ import cors from 'cors';
 import * as forge from 'node-forge';
 import jwt from 'jsonwebtoken';
 import { initStorage, getIndex, saveToIndex, updateInIndex, deleteFromIndex, saveFile, deleteFile, readFile, readFileBuffer, CertMetadata } from './storage';
-import { generateCA, generateIntermediateCA, generateCert, exportToPkcs12, CertConfig } from './pki';
+import { generateCA, generateIntermediateCA, generateCert, generateCRL, exportToPkcs12, CertConfig } from './pki';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -184,7 +184,8 @@ app.post('/api/ca', (req, res) => {
       state: req.body.state,
       locality: req.body.locality,
       validityDays: req.body.validityDays || 3650,
-      keySize: req.body.keySize || 4096
+      keySize: req.body.keySize || 4096,
+      crlUrl: req.body.crlUrl
     };
     
     let certPem, privateKeyPem, serial;
@@ -239,7 +240,8 @@ app.post('/api/certs', (req, res) => {
       validityDays: body.validityDays || 365,
       keySize: body.keySize || 2048,
       isClient: !!body.isClient,
-      sans: body.sans || []
+      sans: body.sans || [],
+      crlUrl: body.crlUrl
     };
 
     const caCertPem = readFile('ca', `${caSerial}.crt`);
@@ -268,10 +270,38 @@ const meta: CertMetadata = {
 
 app.post('/api/certs/:serial/revoke', (req, res) => {
   try {
-    updateInIndex(req.params.serial, { status: 'revoked' });
+    updateInIndex(req.params.serial, { status: 'revoked', revokedAt: new Date().toISOString() });
     res.json({ success: true });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/ca/:serial/crl', (req, res) => {
+  try {
+    const { serial } = req.params;
+    const index = getIndex();
+    const ca = index.find(c => c.serial === serial && c.type === 'ca');
+
+    if (!ca) return res.status(404).send('CA not found');
+
+    const caCertPem = readFile('ca', `${serial}.crt`);
+    const caKeyPem = readFile('ca', `${serial}.key`);
+
+    const revoked = index
+      .filter(c => c.caSerial === serial && c.status === 'revoked')
+      .map(c => ({
+        serial: c.serial,
+        date: (c as any).revokedAt || new Date().toISOString()
+      }));
+
+    const crlPem = generateCRL(caCertPem, caKeyPem, revoked);
+
+    res.setHeader('Content-Type', 'application/x-pkcs7-crl');
+    res.setHeader('Content-Disposition', `attachment; filename="${ca.commonName.replace(/[^a-z0-9]/gi, '_')}.crl"`);
+    res.send(crlPem);
+  } catch (error: any) {
+    res.status(500).send(error.message);
   }
 });
 

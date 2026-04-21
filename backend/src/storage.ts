@@ -11,6 +11,8 @@ export interface CertMetadata {
   issuedAt: string;
   expiresAt: string;
   status: 'active' | 'revoked';
+  revokedAt?: string;
+  [key: string]: any;
 }
 
 export function initStorage() {
