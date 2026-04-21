@@ -112,3 +112,8 @@ If you want to mount a local folder instead of a Docker volume, modify your `doc
 - The backend Docker container utilizes a multi-stage build and runs as the unprivileged `node` user to mitigate potential container escape vulnerabilities.
 - **Production Use**: If exposing this service to the internet, it is highly recommended to place it behind a Reverse Proxy (like Traefik or Nginx Proxy Manager) to provide HTTPS for the UI.
 - Private keys are stored in plaintext inside the Docker volume (`/app/data/keys`). Ensure your host machine's file system is secure.
+
+---
+
+> **P.S. Practical Use Cases**  
+> This product is highly convenient for generating certificates for enterprise **Wi-Fi authentication** (WPA-Enterprise / EAP-TLS). It is also an excellent solution for setting up any Mutual TLS (mTLS) authorization. For instance, you can easily generate and manage client/server certificates to securely connect remote Docker nodes in **Portainer** via port `2376/tls`.
